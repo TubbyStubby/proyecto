@@ -26,6 +26,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="lazy-import" href="secrete-projs.html">
 <link rel="lazy-import" href="register-login.html">
 <link rel="lazy-import" href="dag-nabit.html">
+<link rel="import" href="log-out.html">
 
 <dom-module id="my-app">
   <template>
@@ -66,6 +67,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         color: black;
         font-weight: bold;
       }
+
+      app-header a {
+        text-decoration: none;
+        color: #fff;
+        font-size: smaller;
+      }
     </style>
 
     <app-location
@@ -97,7 +104,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <app-toolbar>
             <paper-icon-button icon="my-icons:menu" drawer-toggle></paper-icon-button>
             <div main-title>Proyecto</div>
-            <a name="register-login" href="[[rootPath]]register-login" style="color: #fff; font-size: smaller; text-decoration: none;">Register | Login</a>
+            <a name="register-login" href="[[rootPath]]register-login">Login</a>
           </app-toolbar>
         </app-header>
 
@@ -134,7 +141,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           subroute: Object,
           // This shouldn't be neccessary, but the Analyzer isn't picking up
           // Polymer.Element#rootPath
-          rootPath: String,
+          rootPath: String
         };
       }
 

@@ -21,30 +21,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         padding: 10px;
       }
+      .card h1 {
+        display: inline-block;
+        margin-left: 10px;
+      }
     </style>
 
-    <iron-ajax
-      id="getProjs"
-      auto
-      url="https://iwpproject-2443.restdb.io/rest/projs/**"
-      method="get"
-      handle-as="json"
+    <iron-ajax 
+      id="getProjAjax" 
+      auto 
+      url="http://blooming-everglades-25161.herokuapp.com/projects/5dac3e32f90f4745501b6aeb" 
+      method="get" 
+      handle-as="json" 
       last-response="{{proj}}">
     </iron-ajax>
 
     <div class="card">
       <div class="circle">1</div>
-      <h1>View One</h1>
-      <p>Ut labores minimum atomorum pro. Laudem tibique ut has.</p>
-      <p>Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Cu mei vide viris gloriatur, at populo eripuit sit.</p>
+      <h1>[[proj.projName]]</h1>
+      <blockquote>[[user.userName]]</blockquote>
+      <paper-button raised  on-tap="getProj" class="primary">Get new Proj</paper-button>
     </div>
+
   </template>
 
   <script>
     class HomeProjects extends Polymer.Element {
       static get is() { return 'home-projs'; }
-    }
 
+      getProj() {
+        this.$.getProjAjax.generateRequest();
+      }
+    }
     window.customElements.define(HomeProjects.is, HomeProjects);
   </script>
 </dom-module>

@@ -10,6 +10,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/polymer/polymer-element.html">
 <link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/brum-global-variable/brum-global-variable.html">
 
 <dom-module id="register-login">
   <template>
@@ -19,21 +25,202 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         padding: 10px;
       }
+      .wrapper-btns {
+        margin-top: 15px;
+      }
+      paper-button.link {
+        color: #757575;
+      }
+      input {
+        border: none;
+        outline: none;
+        width: 100%;
+      }
+      .card {
+        margin: inherit auto;
+        max-width: 500px;
+        margin: 5% auto;
+        transition: height .5s ease-in-out;
+      }
+
+      .alert-error {
+        background: #ffcdd2;
+        border: 1px solid #f44336;
+        border-radius: 3px;
+        color: #333;
+        font-size: 14px;
+        padding: 10px;
+      }
+
+      .alert-success {
+        background: #d9ffcd;
+        border: 1px solid #36f43f;
+        border-radius: 3px;
+        color: #333;
+        font-size: 14px;
+        padding: 10px;
+      }
     </style>
 
+    <iron-ajax
+      id="registerLoginAjax"
+      method="post"
+      content-type="application/json"
+      handle-as="text"
+      on-response="handleUserResponse"
+      on-error="handleUserError">
+    </iron-ajax>
+    
+    <iron-localstorage name="user-storage" value="{{storedUser}}"></iron-localstorage>
+    <brum-global-variable key="userData" value="{{storedUser}}"></brum-global-variable>
+
     <div class="card">
-      <div class="circle">2</div>
-      <h1>View Two</h1>
-      <p>Ea duis bonorum nec, falli paulo aliquid ei eum.</p>
-      <p>Id nam odio natum malorum, tibique copiosae expetenda mel ea.Detracto suavitate repudiandae no eum. Id adhuc minim soluta nam.Id nam odio natum malorum, tibique copiosae expetenda mel ea.</p>
+      <div id="unauthenticated" hidden$="[[storedUser.loggedin]]">
+        <h1>Login</h1>
+        <p><strong>Login</strong> or <strong>Sign Up</strong> to access secrete stuff</p>
+        
+        <template is="dom-if" if="[[error]]">
+          <p class="alert-error">[[error]]</p>
+        </template>
+
+        <template is="dom-if" if="[[success]]">
+          <p class="alert-success">[[success]]</p>
+        </template>
+        
+        <paper-input-container id="emailpic" auto-validate 
+          pattern="^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$">
+          <label slot="input">Email</label>
+          <iron-input slot="input" bind-value="{{formData.userMail}}">
+            <input is="iron-input" type="email" id="userMail" value="{{formData.userMail}}" placeholder="Email">
+          </iron-input>
+        </paper-input-container>
+
+        <paper-input-container>
+          <label slot="input">Password</label>
+          <iron-input slot="input" bind-value="{{formData.userPass}}">
+            <input id="userPass" type="password" value="{{formData.userPass}}" placeholder="Password">
+          </iron-input>
+        </paper-input-container>
+
+        <paper-input-container id="confirmPass" hidden>
+          <label slot="input">Confirm Password</label>
+          <iron-input slot="input" bind-value="{{conpass}}">
+            <input type="password" on-keyup="passvalid" value="{{conpass}}" placeholder="Confirm Password">
+          </iron-input>
+        </paper-input-container>
+        
+        <div class="wrapper-btns">
+          <paper-button id="loginBtn" raised class="primary" on-tap="checkLogin">Login</paper-button>
+          <paper-button id="signupBtn" class="link" on-tap="checkSignup">Sign Up</paper-button>
+        </div>
+      </div>
+
+      <div id="authenticated" hidden$="[[!storedUser.loggedin]]">
+        <h2>Hello, [[storedUser.mail]]!</h2>
+        <p>You are currently logged in. You can access <a href="[[rootPath]]secrete-projs">Secrete Projects</a>!</p>
+        <log-out stored-user="{{storedUser}}"></log-out>
+      </div>
     </div>
   </template>
 
   <script>
     class RegisterLogin extends Polymer.Element {
       static get is() { return 'register-login'; }
-    }
 
+      static get properties() {
+        return {
+          formData: {
+              type: Object,
+              value: {}
+          },
+          storedUser: Object,
+          error: String,
+          success: String
+        }
+      }
+
+      _setReqBody() {
+        console.log('log: ', this.formData);
+        this.$.registerLoginAjax.body = this.formData;
+      }
+
+      checkLogin() {
+        //console.log(this.$.test.invalid);
+        this.$.confirmPass.setAttribute("hidden",null);
+        this.$.signupBtn.removeAttribute("raised")
+        this.$.signupBtn.setAttribute("class","link");
+        this.$.loginBtn.setAttribute("raised",null);
+        if(this.$.loginBtn.getAttribute("class") == "primary")
+          if(!this.$.emailpic.inavlid)
+            this.postLogin();
+        this.$.loginBtn.setAttribute("class","primary");
+      }
+
+      postLogin() {
+        //this.$.registerLoginAjax.url = "http://blooming-everglades-25161.herokuapp.com/users/login";
+        this.$.registerLoginAjax.url = "http://localhost:3000/users/login";
+        this._setReqBody();
+        this.$.registerLoginAjax.generateRequest();
+      }
+
+      checkSignup() {
+        //console.log(this.$.test.invalid);
+        this.$.confirmPass.removeAttribute("hidden");
+        this.$.loginBtn.removeAttribute("raised")
+        this.$.loginBtn.setAttribute("class","link");
+        this.$.signupBtn.setAttribute("raised",null);
+        if(this.$.signupBtn.getAttribute("class") == "primary")
+          if(!this.$.confirmPass.invalid && !this.$.emailpic.inavlid)
+            this.postSignup();
+          else
+            this.error = "Passwords Dont match";
+        this.$.signupBtn.setAttribute("class","primary");
+      }
+
+      postSignup() {
+        //this.$.registerLoginAjax.url = "http://blooming-everglades-25161.herokuapp.com/users/signup";
+        this.$.registerLoginAjax.url = "http://localhost:3000/users/signup";
+        this._setReqBody();
+        //console.log(document.querySelector("#userMail").value);
+        this.$.registerLoginAjax.generateRequest();
+      }
+
+      passvalid() {
+        console.log(this.conpass, this.formData.userPass)
+        if(this.conpass == this.formData.userPass)
+          this.$.confirmPass.removeAttribute("invalid")// = "false";
+        else
+          this.$.confirmPass.setAttribute("invalid",null)// = "false";
+      }
+
+      handleUserResponse(event) {
+        var response = JSON.parse(event.detail.response);
+        console.log(response);
+        if(response.auth) {
+          this.error = '';
+          this.storedUser = {
+            mail: this.formData.userMail,
+            token: response.token,
+            loggedin: true
+          };
+          this.error = '';
+        }
+        if(response.message) {
+          this.success = response.message;
+          this.error = '';
+        }
+
+        this.formData = {};
+        this.conpass = "";
+      }
+
+      handleUserError(event) {
+        var response = event.detail.request.xhr.response;
+        console.log(response);
+        this.error = response.auth?response.auth:"Authentication Failed";
+        this.success = '';
+      }
+    }
     window.customElements.define(RegisterLogin.is, RegisterLogin);
   </script>
 </dom-module>
