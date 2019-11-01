@@ -30,19 +30,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <iron-ajax 
       id="getProjAjax" 
       auto 
-      url="http://blooming-everglades-25161.herokuapp.com/projects/5dac3e32f90f4745501b6aeb" 
+      url="http://blooming-everglades-25161.herokuapp.com/projects/" 
       method="get" 
       handle-as="json" 
-      last-response="{{proj}}">
+      last-response="{{projs}}">
     </iron-ajax>
 
-    <div class="card">
-      <div class="circle">1</div>
-      <h1>[[proj.projName]]</h1>
-      <blockquote>[[user.userName]]</blockquote>
-      <paper-button raised  on-tap="getProj" class="primary">Get new Proj</paper-button>
-    </div>
-
+    <dom-repeat items="{{projs}}">
+      <template>
+        <div class="card">
+          <h2>[[item.projName]]</h2>
+          <paper-button raised  on-tap="viewProj" class="primary">View</paper-button>
+        </div>
+      </template>
+    </dom-repeat>
   </template>
 
   <script>
